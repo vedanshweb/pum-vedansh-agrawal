@@ -1,43 +1,36 @@
-import React from "react";
-import { shallow } from "enzyme";
-import Adapter from 'enzyme-adapter-react-16';
-
+import React from 'react';
+import { shallow } from 'enzyme';
 import PearsonUser from './index';
 
+const mockUser = {
+  id: 4,
+  first_name: "Eve",
+  last_name: "Holt",
+  avatar: "https://s3.amazonaws.com/uifaces/faces/twitter/marcoramires/128.jpg"
+};
+
 describe('PearsonUser', () => {
-    let user;
-    let component;
+  let component;
+  const deleteUser = jest.fn();
 
-    beforeEach(() => {
-        user = {
-            id: 4,
-            first_name: "Eve",
-            last_name: "Holt",
-            avatar: "assets/testImage.jpg"
-        }
-        
-        component = shallow(<PearsonUser {...user} />);
-    });
+  beforeEach(() => {
+    component = shallow(<PearsonUser user={mockUser} deleteUser={deleteUser} />);
+  });
 
-    afterEach(() => {
-        user = null;
-        component = null;
-    });
 
-    it('should render an image', () => {
-        expect(component.find('img').prop('src')).toEqual(user.avatar);
-    });
+  it('renders avatar for a user', () => {
+    const avatar = component.find('img').prop('src');
+    expect(avatar).toEqual(mockUser.avatar);
+  });
 
-    it('should render first name and last name', () => {
-        const fullName = `${user.first_name} ${user.last_name}`;
-        expect(component.find('p').text()).toEqual(fullName);
-    });
+  it('renders full name for a user', () => {
+    let avatar = component.find('.pearson-user-fullname').text();
+    expect(avatar).toEqual(`${mockUser.first_name} ${mockUser.last_name}`);
+  });
 
-    it('should execute the function passed in props.onDelete, when delete button is clicked', () => {
-        const mockFn = jest.fn();
-        component.setProps({ onDelete: mockFn });
-        component.find('button').simulate('click');
+  it('simulates delete button click', () => {
+    component.find('button').simulate('click');
+    expect(deleteUser).toHaveBeenCalledTimes(1);
+  });
 
-        expect(mockFn).toHaveBeenCalledTimes(1);
-    });
 });

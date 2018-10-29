@@ -1,70 +1,42 @@
-import React, { Component } from "react";
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 
-import Users from '../../api/usersApi';
-import { PearsonUser, AlertModal, ErrorNotification, Spinner } from '../../components';
+import { PearsonUser } from '../../components';
 import { getUniqueArray } from '../../lib/helper';
 import Languages from '../../common/Languages';
-import '../../assets/styles/css/PearsonUsers.css';
+import { loadUsers, deleteUser } from '../../actions/userActions';
 
 export class PearsonUsers extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      users: [
-        {
-          id: 4,
-          first_name: "Eve",
-          last_name: "Holt",
-          avatar:
-            "https://s3.amazonaws.com/uifaces/faces/twitter/marcoramires/128.jpg"
-        },
-        {
-          id: 5,
-          first_name: "Charles",
-          last_name: "Morris",
-          avatar:
-            "https://s3.amazonaws.com/uifaces/faces/twitter/stephenmoon/128.jpg"
-        },
-        {
-          id: 6,
-          first_name: "Tracey",
-          last_name: "Ramos",
-          avatar:
-            "https://s3.amazonaws.com/uifaces/faces/twitter/bigmancho/128.jpg"
-        }
-      ],
+      users: [],
       loading: false,
-      error: false
     };
+
+    this.handleDeleteUser = this.handleDeleteUser.bind(this);
   }
 
-  /**
-   * Fetch data from users API on component mount
-   */
+  /*
+  * Load users once component is loaded
+  */
   componentDidMount() {
-    Users.getAllUsers()
-      .then((response) => {
-        const allUsers = [...this.state.users, ...response.data];
-        const uniqueUsers = this.removeDuplicateUser(allUsers);
-
-        this.setState({ users: uniqueUsers, loading: true });
-      })
-      .catch((error) => {
-        this.setState({ error: true });
-      });
+    this.props.loadUsers();
   }
 
-  /**
-   * Prompt delete alert confirmation box
-   */
-  confirmDeleteAction(userId) {
-    AlertModal("confirm", Languages.Confirm, () => this.deleteUser(userId));
+  /*
+  * Returns unique users array
+  */
+  removeDuplicateUser(allUsers) {
+    return getUniqueArray(allUsers);
   }
 
-  /**
-   * Deleting the user by user id
-   */
+  /*
+  * Deleting the user by user id
+  */
   deleteUser(id) {
     const users = [...this.state.users];
     const index = users.findIndex(user => user.id === id);
@@ -73,63 +45,59 @@ export class PearsonUsers extends Component {
     this.setState({ users });
   }
 
-  /**
-   * Returns unique users array
-   */
-  removeDuplicateUser(allUsers) {
-    return getUniqueArray(allUsers);
+  /*
+  * Delete user using Redux action
+  */
+  handleDeleteUser(index) {
+    this.props.deleteUser(index);
   }
 
-  /**
-   * Returns the <PearsonUser /> component user list
-   */
+  /*
+  * Renders list of users using PearsonUser component
+  */
   _renderUserList() {
-    const { users } = this.state;
+    const { users, loading } = this.props;
     return (
-      <section className="pearson-user-container">
-        {
-          users.length ? users.map((user) => {
-            return (
-              <PearsonUser key={user.id} onDelete={() => this.confirmDeleteAction(user.id)} {...user} />
-            );
-          }) : <ErrorNotification message={Languages.EmptyError}/>
-        }
-      </section>
+      <div className='pearson-user-list'>
+        {typeof users !== undefined && users.length ?
+          users.map((user, index) => <PearsonUser key={user.id} user={user} deleteUser={() => this.handleDeleteUser(index)} />)
+          : loading ? 'Loading...' : Languages.EmptyError}
+      </div>
     );
   }
 
-  /**
-   * Returns the error notification
-   */
-  _renderError(message) {
-    return (
-      <ErrorNotification message={message} />
-    );
-  }
-
-  /**
-   * Returns component to render
-   */
-  _renderUsers() {
-    let element = <Spinner />;
-
-    if (this.state.loading) {
-      element = this._renderUserList();
-    }
-
-    if (this.state.error) {
-      element = this._renderError(Languages.Error);
-    }
-
-    return element;
-  }
-
+  /*
+  * Renders title and list of users
+  */
   render() {
     return (
-      <div className="pearson-users">
+      <div className='pearson-container'>
         <h1>{Languages.Title}</h1>
-        {this._renderUsers()}
+        {this._renderUserList()}
       </div>
     );
   }
 }
+
+PearsonUsers.propTypes = {
+  actions: PropTypes.object.isRequired,
+  users: PropTypes.array.isRequired,
+};
+
+PearsonUsers.defaultProps = {
+  actions: {},
+  users: [],
+};
+
+const mapStateToProps = ({ users }) => {
+  return {
+    users: users.users
+  };
+}
+
+const mapDispatchToProps = dispatch => bindActionCreators({
+  loadUsers,
+  deleteUser,
+}, dispatch)
+
+export default connect(mapStateToProps, mapDispatchToProps)(PearsonUsers);

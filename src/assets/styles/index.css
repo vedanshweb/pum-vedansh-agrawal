@@ -1,0 +1,55 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+  }
+  
+  .pearson-container h1 {
+    font-size: 36px;
+    color: #007FA3;
+    padding-left: 50px;
+  }
+  
+  .pearson-user-list {
+    background-color: #D8D8D8;
+    padding: 5px 37px 37px 37px;
+    margin: 0;
+    display: -webkit-box;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-around;
+  }
+  
+  .pearson-user-list-item {
+    background-color: #FFF;
+    padding: 5px;
+    width: 212px;
+    height: 112px;
+    margin-top: 60px;
+    font-size: 14px;
+    text-align: center;
+    color: #E93939;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+  }
+  
+  .pearson-user-list-item img {
+    height: 80px;
+    width: 80px;
+    margin-top: -50px;
+    border-radius: 50%;
+  }
+  
+  .pearson-user-list-item button {
+    align-self: flex-start;
+    color: #007FA3;
+    font-size: 14px;
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+  }

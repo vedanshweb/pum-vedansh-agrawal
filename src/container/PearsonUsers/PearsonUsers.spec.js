@@ -1,33 +1,27 @@
-import React from "react";
-import { shallow } from "enzyme";
-
-import { PearsonUsers } from "./index";
+import React from 'react';
+import { shallow, render } from 'enzyme';
+import { PearsonUsers } from './index';
 import PearsonUser from '../../components/PearsonUser';
+import initialState from '../../reducers/initialState';
 import MockPearsonUsers from '../../mockdata/PearsonUsers.json';
 
-describe("PearsonUsers", () => {
+describe('PearsonUsers', () => {
   let component;
+  let loadUsers;
 
   beforeEach(() => {
-    component = shallow(<PearsonUsers />);
-    component.setState({
-      loading: false,
-      error: false
-    });
+    loadUsers = jest.fn().mockImplementation(() => (initialState));
+    component = shallow(<PearsonUsers loadUsers={loadUsers} users={initialState.users} deleteUser={jest.fn()}/>);
   });
 
-  afterEach(() => {
-    component = null;
-  });
+  it('renders a h1', () => {
+    const h1 = component.find('h1');
 
-  it("renders a h1", () => {
-    const h1 = component.find("h1");
-    expect(h1.text()).toEqual("Pearson User Management");
+    expect(h1.text()).toEqual('Pearson User Management');
   });
 
   it('should render PearsonUser component based on state', () => {
-    component.setState({ loading: true });
-    const usersCount = component.state().users.length;
+    const usersCount = initialState.users.length;
 
     expect(component.find(PearsonUser)).toHaveLength(usersCount);
   });
@@ -41,22 +35,26 @@ describe("PearsonUsers", () => {
   });
 
   it('should remove the duplicate users', () => {
-    const allUsers = [...component.state().users, ...MockPearsonUsers];
-    const filteredUsers = component.instance().removeDuplicateUser(allUsers);
+    const duplicateUsers = [...component.state().users, ...MockPearsonUsers];
+    const uniqueUsers = component.instance().removeDuplicateUser(duplicateUsers);
 
-    const arrUserIds = filteredUsers.map((user) => user.id);
-    const isDuplicate = arrUserIds.some((id, index) => arrUserIds.indexOf(id) != index);
+    expect(uniqueUsers.length).toBe(10);
 
-    expect(filteredUsers.length).toBe(10);
-    expect(isDuplicate).toBeFalsy();
+    const arrUserIds = uniqueUsers.map((user) => user.id);
+    const isDuplicateExist = arrUserIds.some((id, index) => arrUserIds.indexOf(id) != index);
+    
+    expect(isDuplicateExist).toBeFalsy();
   });
 
   it('should delete user by id', () => {
     component.setState({ users: [...MockPearsonUsers] });
     const userId = component.state().users[0].id;
+    
     component.instance().deleteUser(userId);
 
     const isUserExist = component.state().users.some((user) => user.id === userId);
+
     expect(isUserExist).toBeFalsy();
   });
+
 });
